@@ -1,0 +1,28 @@
+<html>
+<body>
+    <state-chart>
+        <template>
+            <state initial="loading">
+                <state id="loading">
+                    <transition event="loaded" target="ready" />
+                </state>
+                <state id="ready">
+                    <state id="normal">
+                        <transition event="dblclick" match=".item[data-id={current}]" target="editing" />
+                    </state>
+                    <state id="editing">
+                        <transition event="blur" match=".edit input" target="normal" />
+                        <transition event="submit" match=".edit" target="normal" />
+                    </state>
+                    <transition event="change" match=".completed[data-{id}][data-{title}]:{checked=completed}"
+                                method="PUT" action="/tasks/{id}">
+                        {completed, title}
+                    </transition>
+                </state>
+            </state>
+        </template>
+
+        <
+    </state-chart>
+</body>
+</html>

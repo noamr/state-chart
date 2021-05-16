@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "serve": "esbuild --sourcemap=external --serve=9090 --servedir=todo-mvc --outdir=todo-mvc/js todo-mvc/statechart.ts"
+  },
+  "name": "state-chart",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.11.12",
+    "esbuild-serve": "^1.0.1",
+    "typescript": "^4.2.4"
+  }
+}

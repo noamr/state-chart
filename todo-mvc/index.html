@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>TodoMVC</title>
+		<link rel="stylesheet" href="node_modules/todomvc-common/base.css">
+		<link rel="stylesheet" href="node_modules/todomvc-app-css/index.css">
+		<!-- CSS overrides - remove if you don't need it -->
+		<link rel="stylesheet" href="css/app.css">
+        <route-controller>
+            <route path="#/(?<filter>:.*)" action="#tasks/$<filter>" method="get" />
+        </route-controller>
+        <list-model id="tasks" key="id" persist="tasks">
+            <filter name="completed">{"completed": true}</filter>
+            <filter name="active">{"completed": true}</filter>
+            <filter name="">{}</filter>
+        </list-model>
+
+        <state-chart id="controller" host=".todoapp">
+            <state id="loading">
+                <invoke type="class" name="loading" target=".todoapp" />
+                <transition event="load" match="#task-persist" target="ready" />
+            </state>
+            <state id="ready">
+                <invoke type="class" name="ready" target=".todoapp" />
+                <state id="normal">
+                    <transition event="dblclick" match=".todo-item input[type=radio]" target="editing" />
+                </state>
+                <state id="editing">
+                    <invoke type="class" name="editing" target=".todoapp" />
+                    <transition event="blur" match=".edit input" target="normal" />
+                    <transition event="submit" match=".edit" target="normal" />
+                </state>
+                <transition event="change" match=".task[data-key={id}] .toggle:{checked}">
+                    <send type="fetch" action="#tasks/${id}" method="put">
+                        <data name="completed" value="${checked}" />
+                    </send>
+                </transition>
+            </state>
+        </state-chart>
+	</head>
+	<body>
+        <section class="todoapp">
+            <header class="header">
+                <h1>todos</h1>
+                <form method="POST" action="#tasks">
+                    <input class="new-todo" placeholder="What needs to be done?" autofocus name="title">
+                </form>
+            </header>
+            <!-- This section should be hidden by default and shown when there are todos -->
+            <section class="main">
+                <input id="toggle-all" class="toggle-all" type="checkbox">
+                <label for="toggle-all">Mark all as complete</label>
+                <list-view class="todo-list" model="#tasks">
+                    <ul slot="list">
+                    </ul>
+
+                    <template>
+                        <form action="#tasks" method="PUT" class="task">
+                            <input type="hidden" name="id" />
+                            <li class="todo-item">
+                                <div class="view">
+                                    <input class="toggle" type="checkbox" name="completed" />
+                                    <label>
+                                        <input class="edit" value="Rule the web" formmethod="PUT" name="title" />
+                                    </label>
+                                    <input type="submit" formmethod="delete" class="destroy" value=X />
+                                </div>
+                            </li>
+                        </form>
+                    </template>
+                </list-view>
+            </section>
+            <!-- This footer should hidden by default and shown when there are todos -->
+            <footer class="footer">
+                <!-- This should be `0 items left` by default -->
+                <span class="todo-count"><strong>0</strong> item left</span>
+                <!-- Remove this if you don't implement routing -->
+                <ul class="filters">
+                    <li>
+                        <a class="selected" href="#/">All</a>
+                    </li>
+                    <li>
+                        <a href="#/active">Active</a>
+                    </li>
+                    <li>
+                        <a href="#/completed">Completed</a>
+                    </li>
+                </ul>
+                <form method="delete" action="#tasks">
+                    <input type="hidden" name="filter" value="completed" />
+                    <input type="submit" class="clear-completed" value="Clear completed" />
+                </form>
+            </footer>
+        </section>
+        <footer class="info">
+            <p>Double-click to edit a todo</p>
+            <!-- Remove the below line ↓ -->
+            <p>Template by <a href="http://sindresorhus.com">Sindre Sorhus</a></p>
+            <!-- Change this out with your name and url ↓ -->
+            <p>Created by <a href="http://todomvc.com">you</a></p>
+            <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+        </footer>
+		<!-- Scripts here. Don't remove ↓ -->
+		<script src="node_modules/todomvc-common/base.js"></script>
+		<script src="js/statechart.js"></script>
+	</body>
+</html>

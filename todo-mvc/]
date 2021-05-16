@@ -1,0 +1,165 @@
+function mvc({host, controller}) {
+    /*
+    const listen = (name, match, callback) => {
+        let element = host
+        let capture = false
+        if (match === ':document')
+            element = host.ownerDocument
+        else if (match === ':window')
+            element = host.ownerDocument.defaultView
+        else
+            capture = true
+
+        const listener = e => {
+            const targetParams = matchParams(e, matcher)
+            if (targetParams)
+                callback(matchParams)
+        }
+
+        element.addEventListener(name, listener, {capture})
+    }
+
+    const apply = (type, name, value) => {
+        switch (type) {
+            case 'attribute':
+                value === null ? host.removeAttribute(name) : host.setAttribute(name, value)
+                break
+            case 'class':
+                value ? host.classList.add(name) : host.classList.removeAttribute(name)
+                break;
+        }
+    }
+    */
+}
+
+class MVCModel extends HTMLElement {
+   constructor() {
+        super(...arguments);
+        const slot = document.createElement('slot')
+        const shadow = this.attachShadow({mode: 'open'})
+        shadow.appendChild(slot)
+
+        const fields = new Map()
+
+        slot.addEventListener('slotchange', e => {
+            const elements = slot.assignedElements()
+            for (const el of elements) {
+                switch (e.tagName) {
+                    case 'field': {
+                        const name = e.getAttribute('name')
+                        const defaultValue = e.textContent
+                        const type = e.getAttribute('type')
+                        fields.set(name, {type, getDefault})
+                        break
+                    }
+                    case 'filter': {
+                        const name = e.getAttribute('name')
+                        const defaultValue = e.textContent
+                        const type = e.getAttribute('type')
+                        const getDefault = defaultValue === ':uuid:' ? uuid() : () => defaultValue
+                        fields.set(name, {type, getDefault})
+                        break
+                    }
+                    case 'aggregate':
+                    break
+                }
+            }
+        })
+   }     
+}
+interface Field {
+    type: 'string' | 'boolean' | 'number'
+    getDefault: () => any
+}
+
+interface Filter {
+    defaultValue: boolean
+    matchers: Array<{field: Field, value: string | boolean | number | null}>
+}
+
+interface Model {
+    fields: Map<string, Field>
+    filters: Map<string, Filter>
+}
+
+function createUid() {
+    return `uid-${Number(new Date()).toString(36)}`
+}
+
+function parseController(e?: Element): Controller | null {
+    if (!e)
+        return null
+
+    debugger
+}
+
+function parseModel(e: Element): Model {
+    const fields = new Map<string, Field>()
+    const filters = new Map<string, Filter>()
+    for (const child of e.childNodes) {
+        switch (child.tagName) {
+            case 'FIELD': {
+                const name = child.getAttribute('name')
+                const type = child.getAttribute('type') as 'string' | 'boolean' | 'number'
+                const defaultValue = child.textContent
+                const getDefault = defaultValue === ':uuid:' ? createUid : () => defaultValue
+                fields.set(name, {type, getDefault})
+                break;
+            }
+            case 'FILTER': {
+                const name = child.getAttribute('name')
+                const defaultValue = child.getAttribute('default') && !!JSON.parse(child.getAttribute('default'))
+                const matchElements = (Array.from(child.childNodes) as Element[]).filter(e => e.tagName === 'MATCH')
+                const matchers = matchElements.map(m => ({
+                    field: m.getAttribute('field'),
+                    value: m.textContent === null ? null : (JSON.parse(m.textContent) as string | boolean | number)
+                }))
+
+                filters.set(name, {defaultValue, matchers})
+                break;
+            }
+        }
+    }
+
+    return {fields, filters}
+}
+
+class MVC extends HTMLElement {
+    models = null
+    view = null
+    controller = null
+    constructor(...args) {
+        super()
+        const slot = document.createElement('slot')
+        const shadow = this.attachShadow({mode: 'open'})
+        const style = document.createElement('style')
+        style.innerHTML = `
+            :host {display: contents}
+            ::slotted(model) { display: none }
+            ::slotted(scxml) { display: none }
+        `
+        shadow.appendChild(style)
+        shadow.appendChild(slot)
+
+        slot.addEventListener('slotchange', () => {
+             const elements = slot.assignedElements()
+             const models = Object.fromEntries(
+                 elements.filter(e => e.tagName === 'MODEL').map(m => [m.getAttribute('name'), parseModel(m)]))
+            debugger
+             const controller = parseController(elements.find(e => e.tagName === 'SCXML'))
+             console.log(models)
+//             elements.forEach(element => {
+//                 switch (element.tagName) {
+//                     case 'scxml':
+// //                        initController({controller: element, host: this})
+//                     break;
+//                     default:
+//                     break;
+//                 }
+//             })
+        })
+    }
+}
+
+customElements.define('mvc-app', MVC)
+customElements.define('mvc-model', MVCModel)

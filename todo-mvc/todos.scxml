@@ -1,0 +1,18 @@
+<scxml initial="loading">
+    <state id="loading">
+        <transition event="loaded" target="ready" />
+    </state>
+    <state id="ready">
+        <state id="normal">
+            <transition event="dblclick" match=".todo-item#{current} label" target="editing" />
+        </state>
+        <state id="editing">
+            <transition event="blur" match=".edit input" target="normal" />
+            <transition event="submit" match=".edit" target="normal" />
+        </state>
+        <transition event="click" match=".clear-completed" >
+        <transition event="change" match=".todo-item#{id} .toggle:{checked}"
+                    method="PUT" action="#tasks/{id}?completed={checked}"></transition>
+    </state>
+    <transition event=":hash?#/{filter}" method="GET" action="#tasks?filter={filter}" />
+</state>

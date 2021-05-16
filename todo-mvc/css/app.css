@@ -1,0 +1,40 @@
+/*
+
+app-template.css overrides
+
+remove this comment if used
+remove this file if not
+
+*/
+ul {
+    list-style: none
+}
+
+input[type=radio] {
+    appearance: none
+}
+
+.todo-list li .edit {
+    display: block
+}
+
+.edit:not(:focus) {
+    border: none;
+    box-shadow: none;
+}
+
+input[type=submit] {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	font-size: 100%;
+	vertical-align: baseline;
+	font-family: inherit;
+	font-weight: inherit;
+	color: inherit;
+	-webkit-appearance: none;
+	appearance: none;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
